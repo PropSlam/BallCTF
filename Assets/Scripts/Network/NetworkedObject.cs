@@ -36,7 +36,6 @@ public class NetworkedObject : MonoBehaviour {
 
     public int debugId;
 
-
     float lastUpdateTime;
     bool lerp;
 
@@ -66,10 +65,10 @@ public class NetworkedObject : MonoBehaviour {
 
 
     void Awake() {
-        if( sceneId < 0 && !GameServer.Active && !GameClient.Active ) {
+        if (sceneId < 0 && !GameServer.Active && !GameClient.Active) {
             id = sceneId;
         }
-        if( id == 0 ) {
+        if (id == 0) {
             id = GetNewId();
         }
         body = GetComponent<Rigidbody>();
@@ -77,16 +76,18 @@ public class NetworkedObject : MonoBehaviour {
             networkedComponents = new List<NetworkedComponent>(GetComponents<NetworkedComponent>());
         }
     }
+
     void OnDestroy() {
         objDict.Remove(id);
         objList.Remove(this); // TODO Consider doing this elsewhere
-        if( dirtyObjects.Contains(this)) {
+        if (dirtyObjects.Contains(this)) {
             dirtyObjects.Remove(this);
         }
         if (GameServer.Active) {
             destroyedObjects.Add(id);
         }
     }
+
     public static int GetNewId() {
         int key = Random.Range(1, int.MaxValue);
         while (objDict.ContainsKey(key)) {
@@ -94,6 +95,7 @@ public class NetworkedObject : MonoBehaviour {
         }
         return key;
     }
+
     public static int NetworkWriteAll(NetDataWriter writer, int start, List<NetworkedObject> objectList, bool allComponents = false) {
         int length = objectList.Count - start;
         if (length > GameServer.OBJECT_BATCH_SIZE) {
@@ -111,14 +113,14 @@ public class NetworkedObject : MonoBehaviour {
         }
         return 0;
     }
+
     void NetworkWrite(NetDataWriter writer, bool allComponents = false) {
         writer.Put(id); // -2
         writer.Put(prefab); // -1
         writer.Put(ownerId); // 0
         if (parent != null) {
             writer.Put(parent.id); // 1 parent
-        }
-        else {
+        } else {
             writer.Put((int)0); // 1 parent
         }
         writer.Put(useLocalPosition); // 2 useLocal
@@ -135,11 +137,12 @@ public class NetworkedObject : MonoBehaviour {
             writer.Put(body.IsSleeping()); // 12 sleep
         }
         foreach (NetworkedComponent comp in networkedComponents) {
-            comp.PrepareSerialize(writer,allComponents);
+            comp.PrepareSerialize(writer, allComponents);
         }
     }
-    void NetworkRead(NetDataReader reader, bool ownerChanged = false, bool firstSync = false ) { // id, prefab, ownerId have already been read in
-        if ( !firstSync && ((GameServer.Active && ownerId == SERVER_OWNER_ID) || (GameClient.Active && ownerId == GameClient.ownerId)) && !ownerChanged) {
+
+    void NetworkRead(NetDataReader reader, bool ownerChanged = false, bool firstSync = false) { // id, prefab, ownerId have already been read in
+        if (!firstSync && ((GameServer.Active && ownerId == SERVER_OWNER_ID) || (GameClient.Active && ownerId == GameClient.ownerId)) && !ownerChanged) {
             reader.GetInt(); // 1 parent
             reader.GetBool(); // 2 useLocal
             reader.GetByte(); // 3  layerDepth
@@ -165,21 +168,20 @@ public class NetworkedObject : MonoBehaviour {
             lastUpdateTime = Time.time;
             lerp = false;
 
-            
+
 
             foreach (NetworkedComponent comp in networkedComponents) {
                 comp.PrepareDeserialize(reader);
             }
-        }
-        else {
+        } else {
             parentId = reader.GetInt(); // 1 parent
             useLocalPosition = reader.GetBool(); // 2 useLocal
             layerDepth = reader.GetByte(); // 3 layerDepth
             gameObject.layer = reader.GetByte(); // 4  layer // Layers only use the first 5 bits (max layer 31)
-            if( layerDepth > 0) {
+            if (layerDepth > 0) {
                 SetChildrenLayer(gameObject.layer, transform, layerDepth - 1);
             }
-            
+
             position = reader.GetVector3(); // 5 position
             rotation = Quaternion.Euler(reader.GetVector3()); // 6 angle
             syncTransform = reader.GetBool(); // 7 syncEnabled
@@ -220,6 +222,7 @@ public class NetworkedObject : MonoBehaviour {
             }
         }
     }
+
     public static void SendNetworkedObjectsDirty(List<NetPeer> peers, NetDataWriter writer) {
         if (peers.Count != 0) {
             int cutoff = 0; // Updates have to be batched to fit in UDP packet size limits
@@ -233,18 +236,20 @@ public class NetworkedObject : MonoBehaviour {
             ClearDirtyObjects();
         }
     }
+
     public static void SendNetworkedObjects(List<NetPeer> peers, NetDataWriter writer) {
         if (peers.Count != 0) {
             int cutoff = 0; // Updates have to be batched to fit in UDP packet size limits
             do {
                 writer.Reset();
-                cutoff = NetworkWriteAll(writer, cutoff, objList, allComponents: true );
+                cutoff = NetworkWriteAll(writer, cutoff, objList, allComponents: true);
                 foreach (NetPeer peer in peers) {
                     peer.Send(writer, DeliveryMethod.ReliableOrdered);
                 }
             } while (cutoff != 0);
         }
     }
+
     public static void SendOwnedNetworkedObjects(List<NetPeer> peers, NetDataWriter writer) {
         if (peers.Count > 0) {
             List<NetworkedObject> ownedDirtyObjects = new List<NetworkedObject>();
@@ -264,6 +269,7 @@ public class NetworkedObject : MonoBehaviour {
             ClearDirtyObjects();
         }
     }
+
     public static void NetworkReadAll(NetDataReader reader, int peerOwnerId = SERVER_OWNER_ID) {
         int length = reader.GetInt();
         for (int i = 0; i < length; i++) {
@@ -276,20 +282,18 @@ public class NetworkedObject : MonoBehaviour {
                     bool ownerChanged = objDict[id].ownerId != ownerId;
                     objDict[id].ownerId = ownerId;
                     objDict[id].NetworkRead(reader, ownerChanged);
-                }
-                else {
+                } else {
                     objDict[id].NetworkRead(reader);
                 }
 
-            }
-            else if (!GameServer.Active ) { // && (!clientDestroyedObjects.ContainsKey(id) ||  !clientDestroyedObjects[id])
+            } else if (!GameServer.Active) { // && (!clientDestroyedObjects.ContainsKey(id) ||  !clientDestroyedObjects[id])
                 GameObject newObj = GameObject.Instantiate(GameServer.singleton.prefabs[prefab]);
                 NetworkedObject newNetObj = newObj.GetComponent<NetworkedObject>();
                 if (newNetObj) {
                     newNetObj.id = id;
                     newNetObj.prefab = prefab;
                     newNetObj.ownerId = ownerId;
-                    newNetObj.NetworkRead(reader, firstSync : true);
+                    newNetObj.NetworkRead(reader, firstSync: true);
                 }
             }
         }
@@ -298,9 +302,9 @@ public class NetworkedObject : MonoBehaviour {
     void Update() {
         debugId = id;
         if (GameServer.Active || (ownerId == GameClient.ownerId && GameClient.Active)) {
-            if( KEEP_ABOVE && transform.position.y < KEEP_ABOVE_ELEVATION) {
+            if (KEEP_ABOVE && transform.position.y < KEEP_ABOVE_ELEVATION) {
                 transform.position = new Vector3(transform.position.x, KEEP_ABOVE_ELEVATION + KEEP_ABOVE_ADJUSTMENT, transform.position.z);
-                if( body) {
+                if (body) {
                     body.velocity = new Vector3(body.velocity.x, 0f, body.velocity.y);
                 }
             }
@@ -309,7 +313,7 @@ public class NetworkedObject : MonoBehaviour {
                 body.useGravity = gravity;
                 body.WakeUp();
             }
-            if ( syncTransform && ((body && !body.IsSleeping()) || (dirtyCheckPosition != transform.position || dirtyCheckRotation != transform.rotation))) {
+            if (syncTransform && ((body && !body.IsSleeping()) || (dirtyCheckPosition != transform.position || dirtyCheckRotation != transform.rotation))) {
                 SetDirty();
                 dirtyCheckPosition = transform.position;
                 dirtyCheckRotation = transform.rotation;
@@ -320,8 +324,7 @@ public class NetworkedObject : MonoBehaviour {
                     parentId = 0;
                     SetDirty();
                 }
-            }
-            else {
+            } else {
                 if (parent == null) {
                     NetworkedObject parentObj = transform.parent.gameObject.GetComponent<NetworkedObject>();
                     if (parentObj) {
@@ -355,15 +358,13 @@ public class NetworkedObject : MonoBehaviour {
                         body.velocity = Vector3.zero;
                         body.angularVelocity = Vector3.zero;
                         body.Sleep();
-                    }
-                    else {
+                    } else {
                         body.isKinematic = kinematic;
                         body.useGravity = gravity;
                     }
                 }
                 lerp = false;
-            }
-            else {
+            } else {
                 transform.position = Vector3.Lerp(prevPosition, position, lerpProgress);
                 transform.rotation = Quaternion.Slerp(prevRotation, rotation, lerpProgress);
                 if (body) {
@@ -373,22 +374,24 @@ public class NetworkedObject : MonoBehaviour {
             }
         }
     }
+
     void TrySetParent() {
         if (parentId != 0 && parent == null && objDict.ContainsKey(parentId)) {
             parent = objDict[parentId];
             transform.parent = parent.transform;
-        }
-        else if (parentId == 0 && parent) {
+        } else if (parentId == 0 && parent) {
             parent = null;
             transform.parent = null;
         }
     }
+
     public void SetDirty() {
         if (!dirty && !dirtyObjects.Contains(this)) {
             dirtyObjects.Add(this);
             dirty = true;
         }
     }
+
     public static void ClearDirtyObjects() {
         foreach (NetworkedObject obj in dirtyObjects) {
             obj.dirty = false;
@@ -398,6 +401,7 @@ public class NetworkedObject : MonoBehaviour {
         }
         dirtyObjects = new List<NetworkedObject>();
     }
+
     public NetDataWriter GetComponentWriter(NetworkedComponent component) {
         if (!networkedComponents.Contains(component)) {
             return null;
@@ -408,6 +412,7 @@ public class NetworkedObject : MonoBehaviour {
         writer.Put((byte)networkedComponents.IndexOf(component));
         return writer;
     }
+
     public static void HandleComponentMessage(NetDataReader reader, int peerId) {
         int id = reader.GetInt();
         byte compIndex = reader.GetByte();
@@ -415,15 +420,17 @@ public class NetworkedObject : MonoBehaviour {
             objDict[id].networkedComponents[compIndex].HandleMessage(reader, peerId);
         }
     }
+
     public static void SetChildrenLayer(int value, Transform transform, int depth) {
-        foreach( Transform child in transform) {
+        foreach (Transform child in transform) {
             child.gameObject.layer = value;
-            if( depth > 0 ) {
+            if (depth > 0) {
                 SetChildrenLayer(value, child, depth - 1);
             }
         }
     }
-    public static void SendDestroyedObjects( List<NetPeer> peers, NetDataWriter writer ) {
+
+    public static void SendDestroyedObjects(List<NetPeer> peers, NetDataWriter writer) {
         writer.Reset();
         writer.Put(GameServer.MESSAGE_OBJECT_DESTROY);
         writer.PutArray(destroyedObjects.ToArray());
@@ -432,6 +439,7 @@ public class NetworkedObject : MonoBehaviour {
         }
         destroyedObjects.Clear();
     }
+
     public static void HandleDestroyMessage(NetDataReader reader, int peerId) {
         foreach (int i in reader.GetIntArray()) {
             if (objDict.ContainsKey(i)) {

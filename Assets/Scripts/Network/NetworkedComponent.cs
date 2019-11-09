@@ -5,12 +5,11 @@ using LiteNetLib;
 using LiteNetLib.Utils;
 
 [RequireComponent(typeof(NetworkedObject))]
-public class NetworkedComponent : MonoBehaviour
-{
+public class NetworkedComponent : MonoBehaviour {
     NetworkedObject _networkedObject;
     public NetworkedObject networkedObject {
         get {
-            if( !_networkedObject) {
+            if (!_networkedObject) {
                 _networkedObject = GetComponent<NetworkedObject>();
             }
             return _networkedObject;
@@ -28,38 +27,38 @@ public class NetworkedComponent : MonoBehaviour
             }
         }
     }
+
     protected NetDataWriter GetWriter() {
         return networkedObject.GetComponentWriter(this);
     }
-    protected void SendNetworkMessage( NetDataWriter writer ) {
-        if( GameServer.Active) {
+
+    protected void SendNetworkMessage(NetDataWriter writer) {
+        if (GameServer.Active) {
             GameServer.SendNetworkMessage(writer);
-        }
-        else if( GameClient.Active) {
+        } else if (GameClient.Active) {
             GameClient.SendNetworkMessage(writer);
         }
     }
-    public void PrepareSerialize( NetDataWriter writer, bool forceSerialize = false ) {
+
+    public void PrepareSerialize(NetDataWriter writer, bool forceSerialize = false) {
         writer.Put(dirty || forceSerialize);
-        if( dirty || forceSerialize ) {
+        if (dirty || forceSerialize) {
             Serialize(writer);
-            if( !forceSerialize) {
+            if (!forceSerialize) {
                 dirty = false;
             }
         }
     }
-    public void PrepareDeserialize( NetDataReader reader) {
-        if( reader.GetBool()) {
+
+    public void PrepareDeserialize(NetDataReader reader) {
+        if (reader.GetBool()) {
             Deserialize(reader);
         }
     }
-    public virtual void HandleMessage( NetDataReader reader, int peerId ) {
 
-    }
-    public virtual void Serialize( NetDataWriter writer ) {
+    public virtual void HandleMessage(NetDataReader reader, int peerId) { }
 
-    }
-    public virtual void Deserialize( NetDataReader reader ) {
+    public virtual void Serialize(NetDataWriter writer) { }
 
-    }
+    public virtual void Deserialize(NetDataReader reader) { }
 }
