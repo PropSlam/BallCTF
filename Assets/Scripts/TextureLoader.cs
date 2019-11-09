@@ -9,14 +9,16 @@ public class TextureLoader : MonoBehaviour {
     const float MAX_WAIT_TIME = 10f; // Maximum time to wait for multiple identical textures to load;
     static TextureLoader main;
     public static Dictionary<string, Texture> texList = new Dictionary<string, Texture>();
+
     public static void LoadTexture(string url, TextureCallback callback = null, Material mat = null, string property = null, Texture tex = null) {
         if (!main) {
             main = FindObjectOfType<TextureLoader>();
         }
-        if( main && !string.IsNullOrEmpty(url)) {
+        if (main && !string.IsNullOrEmpty(url)) {
             main.PrivateLoadTexture(url, callback, mat, property, tex);
         }
     }
+
     public void PrivateLoadTexture(string url, TextureCallback callback = null, Material mat = null, string property = null, Texture tex = null) {
         if (texList.ContainsKey(url) && texList[url] != null) {
             FinishLoad(url, callback, mat, property, tex);
@@ -27,18 +29,16 @@ public class TextureLoader : MonoBehaviour {
             if (tempTex) {
                 texList[url] = tempTex;
                 FinishLoad(url, callback, mat, property, tex);
-            }
-            else if( File.Exists(GetCachePath(url)) ) {
+            } else if (File.Exists(GetCachePath(url))) {
                 StartCoroutine(CoLoadTexture(GetCachePath(url), callback, mat, property, tex));
+            } else {
+                StartCoroutine(CoLoadTexture(url, callback, mat, property, tex, cache: true));
             }
-            else {
-                StartCoroutine(CoLoadTexture(url, callback, mat, property, tex, cache : true));
-            }
-        }
-        else {
+        } else {
             StartCoroutine(CoLoadTexture(url, callback, mat, property, tex));
         }
     }
+
     IEnumerator CoLoadTexture(string url, TextureCallback callback = null, Material mat = null, string property = null, Texture tex = null, bool cache = false) {
         if (!texList.ContainsKey(url)) {
             texList[url] = null;
@@ -49,17 +49,15 @@ public class TextureLoader : MonoBehaviour {
                 Texture2D newTex = new Texture2D(0, 0);
                 www.LoadImageIntoTexture(newTex);
                 texList[url] = newTex;
-                if ( cache && !File.Exists(GetCachePath(url) ) ){
-                    if( !Directory.Exists(Directory.GetCurrentDirectory()+"/"+CACHE_PATH)) {
-                        Directory.CreateDirectory(Directory.GetCurrentDirectory()+"/" + CACHE_PATH);
+                if (cache && !File.Exists(GetCachePath(url))) {
+                    if (!Directory.Exists(Directory.GetCurrentDirectory() + "/" + CACHE_PATH)) {
+                        Directory.CreateDirectory(Directory.GetCurrentDirectory() + "/" + CACHE_PATH);
                     }
                     File.WriteAllBytes(GetCachePath(url), www.bytes);
                 }
-            }
-            else {
+            } else {
                 texList.Remove(url);
             }
-
         }
         if (mat != null || tex != null || callback != null) {
             if (texList.ContainsKey(url) && texList[url] == null) {
@@ -74,13 +72,13 @@ public class TextureLoader : MonoBehaviour {
             FinishLoad(url, callback, mat, property, tex);
         }
     }
+
     void FinishLoad(string url, TextureCallback callback = null, Material mat = null, string property = null, Texture tex = null) {
         if (texList.ContainsKey(url) && texList[url] != null) {
             if (mat) {
                 if (property != null) {
                     mat.SetTexture(property, texList[url]);
-                }
-                else {
+                } else {
                     mat.mainTexture = texList[url];
                 }
 
@@ -93,13 +91,15 @@ public class TextureLoader : MonoBehaviour {
             }
         }
     }
+
     // Use this for initialization
     void Start() {
         if (!main) {
             main = this;
         }
     }
-    static string GetCachePath( string url ) {
+
+    static string GetCachePath(string url) {
         return Directory.GetCurrentDirectory() + "/" + CACHE_PATH + "/" + url.GetHashCode();
     }
 }
