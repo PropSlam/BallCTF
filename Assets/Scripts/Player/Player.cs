@@ -2,21 +2,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UniRx;
 
+[ExecuteInEditMode]
 public class Player : MonoBehaviour {
-    public Team team;
-    public string alias;
+    public TeamReactiveProperty team;
+    public StringReactiveProperty alias;
     private Canvas canvas;
     private Text aliasText;
 
     void Start() {
-        var teamName = team.ToString("G");
-        var playerMaterial = Resources.Load<Material>($"Materials/Player/{teamName}");
-        GetComponent<Renderer>().material = playerMaterial;
-
         canvas = GetComponentInChildren<Canvas>();
         aliasText = canvas.transform.Find("Alias").GetComponent<Text>();
-        aliasText.text = alias;
+
+        team.Subscribe(newTeam => {
+            var teamName = newTeam.ToString("G");
+            var playerMaterial = Resources.Load<Material>($"Materials/Player/{teamName}");
+            GetComponent<Renderer>().material = playerMaterial;
+        });
+        alias.Subscribe(newAlias => aliasText.text = newAlias);
     }
 
     void OnGUI() {

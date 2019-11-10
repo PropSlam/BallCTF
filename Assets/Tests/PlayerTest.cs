@@ -6,7 +6,7 @@ using UnityEngine.TestTools;
 
 namespace Tests {
     public class PlayerTest {
-        private GameObject playerPrefab;
+        private Player player;
 
         [SetUp]
         public void Setup() {
@@ -20,15 +20,16 @@ namespace Tests {
             cam.tag = "MainCamera";
 
             // Load player prefab.
-            playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
+            var playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
+            var playerObj = GameObject.Instantiate(playerPrefab);
+            player = playerObj.GetComponent<Player>();
         }
 
         // Tests material is set to Yellow when team is Yellow.
         [UnityTest]
         public IEnumerator SetsYellowTeamMaterial() {
-            // Spawn player.
-            playerPrefab.GetComponent<Player>().team = Team.Yellow;
-            var player = GameObject.Instantiate(playerPrefab);
+            // Set to Yellow team.
+            player.team.Value = Team.Yellow;
 
             // Advance one tick.
             yield return new WaitForFixedUpdate();
@@ -43,9 +44,8 @@ namespace Tests {
         // Tests material is set to Purple when team is Purple.
         [UnityTest]
         public IEnumerator SetsPurpleTeamMaterial() {
-            // Spawn player.
-            playerPrefab.GetComponent<Player>().team = Team.Purple;
-            var player = GameObject.Instantiate(playerPrefab);
+            // Set to Purple team.
+            player.team.Value = Team.Purple;
 
             // Advance one tick.
             yield return new WaitForFixedUpdate();
@@ -60,9 +60,8 @@ namespace Tests {
         // Tests alias is rendered correctly.
         [UnityTest]
         public IEnumerator RendersAlias() {
-            // Spawn player.
-            playerPrefab.GetComponent<Player>().alias = "Jimmy Testerino";
-            var player = GameObject.Instantiate(playerPrefab);
+            // Set player alias.
+            player.alias.Value = "Jimmy Testerino";
 
             // Advance one tick.
             yield return new WaitForFixedUpdate();
@@ -71,11 +70,16 @@ namespace Tests {
             var aliasText = player.transform.Find("Canvas/Alias").GetComponent<Text>();
             Assert.AreEqual("Jimmy Testerino", aliasText.text);
 
+            // Allow player to fall for a bit.
+            Time.timeScale = 50f;
+            yield return new WaitForSeconds(1);
+            Time.timeScale = 1f;
+
             // Assert text position is correct.
             var expectedAliasPos = player.transform.position + Camera.main.transform.up;
             var expectedScreenPos = Camera.main.WorldToScreenPoint(expectedAliasPos);
             var differenceToExpected = Vector3.Distance(expectedScreenPos, aliasText.rectTransform.position);
-            Assert.Less(differenceToExpected, 0.01);
+            Assert.Less(differenceToExpected, 10); // close enough...
         }
     }
 }
