@@ -25,7 +25,7 @@ namespace Tests {
 
         // Tests material is set to Yellow when team is Yellow.
         [UnityTest]
-        public IEnumerator SetsYellowMaterial() {
+        public IEnumerator SetsYellowTeamMaterial() {
             // Spawn player.
             playerPrefab.GetComponent<Player>().team = Team.Yellow;
             var player = GameObject.Instantiate(playerPrefab);
