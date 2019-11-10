@@ -60,26 +60,21 @@ namespace Tests {
         // Tests alias is rendered correctly.
         [UnityTest]
         public IEnumerator RendersAlias() {
-            // Set player alias.
+            // Set player alias and move the player transform.
             player.alias.Value = "Jimmy Testerino";
+            player.transform.position = new Vector3(0, 0, 5);
 
-            // Advance one tick.
-            yield return new WaitForFixedUpdate();
+            yield return new WaitForEndOfFrame();
 
             // Assert text content is correct.
             var aliasText = player.transform.Find("Canvas/Alias").GetComponent<Text>();
             Assert.AreEqual("Jimmy Testerino", aliasText.text);
 
-            // Allow player to fall for a bit.
-            Time.timeScale = 50f;
-            yield return new WaitForSeconds(1);
-            Time.timeScale = 1f;
-
             // Assert text position is correct.
             var expectedAliasPos = player.transform.position + Camera.main.transform.up;
             var expectedScreenPos = Camera.main.WorldToScreenPoint(expectedAliasPos);
             var differenceToExpected = Vector3.Distance(expectedScreenPos, aliasText.rectTransform.position);
-            Assert.Less(differenceToExpected, 10); // close enough...
+            Assert.Less(differenceToExpected, 0.01f); // close enough...
         }
     }
 }
