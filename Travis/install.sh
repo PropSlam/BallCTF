@@ -2,7 +2,7 @@
 
 VERSION=2019.2.11f1
 
-curl -o unity.zip $UNITY_EDITOR_URL
+curl -L $UNITY_EDITOR_URL > unity.zip
 unzip unity.zip
 
 sudo installer -dumplog -package Unity.pkg -target /

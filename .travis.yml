@@ -9,5 +9,5 @@ before_install:
 install:
 - ./Travis/install.sh
 script:
-- ./Travis/build.sh
+# - ./Travis/build.sh #TODO
 - ./Travis/test.sh
