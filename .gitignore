@@ -89,3 +89,7 @@ project.assets.json
 # Ignore generated test scenes
 Assets/InitTestScene*.unity
 Assets/InitTestScene*.unity.meta
+
+# Unity Test generated files
+results.xml
+unity.log
