@@ -4,7 +4,8 @@ echo "Attempting to run tests."
 /Applications/Unity/Unity.app/Contents/MacOS/Unity \
     -batchmode \
     -nographics \
-    -force-free \
+    -username '$UNITY_USERNAME' \
+    -password '$UNITY_PASSWORD' \
     -runTests \
     -testPlatform playmode \
     -projectPath $(pwd) \
