@@ -12,5 +12,7 @@ public class TeamReactiveProperty : ReactiveProperty<Team> {
     public TeamReactiveProperty(Team initialValue) : base(initialValue) { }
 }
 
+#if UNITY_EDITOR
 [UnityEditor.CustomPropertyDrawer(typeof(TeamReactiveProperty))]
 public class ExtendInspectorDisplayDrawer : InspectorDisplayDrawer { }
+#endif
