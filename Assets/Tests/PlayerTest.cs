@@ -19,8 +19,11 @@ namespace Tests {
             cam.AddComponent<Camera>();
             cam.tag = "MainCamera";
 
+            // Spawn UI.
+            GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/UI"));
+
             // Load player prefab.
-            var playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
+            var playerPrefab = Resources.Load<GameObject>("Prefabs/Player/Player");
             var playerObj = GameObject.Instantiate(playerPrefab);
             player = playerObj.GetComponent<Player>();
         }
@@ -67,7 +70,8 @@ namespace Tests {
             yield return new WaitForEndOfFrame();
 
             // Assert text content is correct.
-            var aliasText = player.transform.Find("Canvas/Alias").GetComponent<Text>();
+            var ui = GameObject.FindGameObjectWithTag("UI");
+            var aliasText = ui.transform.Find("Alias(Clone)").GetComponent<Text>();
             Assert.AreEqual("Jimmy Testerino", aliasText.text);
 
             // Assert text position is correct.

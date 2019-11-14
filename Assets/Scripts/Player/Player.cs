@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
-using System;
+using UniRx.Triggers;
 
-[ExecuteInEditMode]
 public class Player : MonoBehaviour {
     public TeamReactiveProperty team;
     public StringReactiveProperty alias;
-    private Canvas canvas;
     private Text aliasText;
 
     internal void Death() {
@@ -17,14 +15,20 @@ public class Player : MonoBehaviour {
     }
 
     void Start() {
-        canvas = GetComponentInChildren<Canvas>();
-        aliasText = canvas.transform.Find("Alias").GetComponent<Text>();
+        // Instantiate Alias text into main UI canvas and clean up with OnDestroy
+        aliasText = GameObject.Instantiate(Resources.Load<Text>("Prefabs/Player/Alias"));
+        aliasText.transform.SetParent(GameObject.FindGameObjectWithTag("UI").transform);
+        this.OnDestroyAsObservable().Where(_ => aliasText)
+            .Subscribe(_ => Destroy(aliasText.gameObject));
 
+        // Subscribe to team changes.
         team.Subscribe(newTeam => {
             var teamName = newTeam.ToString("G");
             var playerMaterial = Resources.Load<Material>($"Materials/Player/{teamName}");
             GetComponent<Renderer>().material = playerMaterial;
         });
+
+        // Subscribe to alias changes.
         alias.Subscribe(newAlias => aliasText.text = newAlias);
     }
 
