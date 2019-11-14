@@ -512,7 +512,7 @@ PrefabInstance:
     - target: {fileID: 4134684943211891262, guid: 8c31e9085f8964f45bab657f2293381f,
         type: 3}
       propertyPath: m_Name
-      value: DangerPokers
+      value: Spikes
       objectReference: {fileID: 0}
     - target: {fileID: 4134684943211891251, guid: 8c31e9085f8964f45bab657f2293381f,
         type: 3}

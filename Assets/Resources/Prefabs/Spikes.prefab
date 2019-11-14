@@ -159,9 +159,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bae1b90f8f5c41849843e3eb55776d81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  reactLayer:
+  touchLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
 --- !u!1 &4134684943242229678
 GameObject:
   m_ObjectHideFlags: 0

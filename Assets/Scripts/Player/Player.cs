@@ -12,8 +12,8 @@ public class Player : MonoBehaviour {
     private Canvas canvas;
     private Text aliasText;
 
-    internal void Death(ReactOnTouch reactOnTouch) {
-        Destroy(this.gameObject);
+    internal void Death() {
+        Destroy(gameObject);
     }
 
     void Start() {
