@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
+using System;
 
 [ExecuteInEditMode]
 public class Player : MonoBehaviour {
@@ -10,6 +11,10 @@ public class Player : MonoBehaviour {
     public StringReactiveProperty alias;
     private Canvas canvas;
     private Text aliasText;
+
+    internal void Death() {
+        Destroy(gameObject);
+    }
 
     void Start() {
         canvas = GetComponentInChildren<Canvas>();
