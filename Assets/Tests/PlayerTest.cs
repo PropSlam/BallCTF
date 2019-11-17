@@ -94,7 +94,7 @@ namespace Tests {
         private IEnumerator MoveWithKey(KeyControl key) {
             Time.timeScale = 10f;
             Press(key);
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(2);
             Release(key);
             Time.timeScale = 1f;
         }

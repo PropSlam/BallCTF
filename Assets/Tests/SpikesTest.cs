@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.TestTools;
+using UnityEngine.UI;
 
 namespace Tests {
 
@@ -21,8 +21,11 @@ namespace Tests {
             cam.AddComponent<Camera>();
             cam.tag = "MainCamera";
 
+            // Spawn UI.
+            GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/UI"));
+
             // Load player prefab.
-            var playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
+            var playerPrefab = Resources.Load<GameObject>("Prefabs/Player/Player");
             var playerObj = GameObject.Instantiate(playerPrefab);
             player = playerObj.GetComponent<Player>();
             playerObj.transform.SetPositionAndRotation(new Vector3(0, 2, 5), Quaternion.identity);
