@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 6100053024175195874}
   - component: {fileID: 6100053024175195902}
   - component: {fileID: 6100053024175195875}
+  - component: {fileID: 1182116324}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -125,4 +126,84 @@ MonoBehaviour:
   team:
     value: 0
   alias:
-    value: 
+    value: propslam
+--- !u!114 &1182116324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6100053024175195876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: aae0117a241bafe43b9ef8cd68439fcf,
+    type: 3}
+  m_NotificationBehavior: 2
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents:
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 3852aa37-951e-47d9-ad71-22c4a21cee48
+    m_ActionName: Player/Move
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 60b3eef8-be26-4ffc-98a3-cfbe774e42a6
+    m_ActionName: Player/Look
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 1dd54fdf-25b7-4004-a641-c33bb71ac3f5
+    m_ActionName: UI/Navigate
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 0f3a875f-22aa-4557-af66-d55a095c586f
+    m_ActionName: UI/Submit
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: ea3d1aec-a2e5-401b-a813-1841ac816741
+    m_ActionName: UI/Cancel
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: e6869ede-0804-4f73-8d96-a5fd4e70a5af
+    m_ActionName: UI/Point
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: c5013aa7-10b9-41a6-93d8-cdaa08213e32
+    m_ActionName: UI/Click
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 86b8e859-211c-4f15-8897-336e350bd2ec
+    m_ActionName: UI/ScrollWheel
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 5117e4cf-269a-496e-bd2b-effe01bd211e
+    m_ActionName: UI/MiddleClick
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: f7a4cff7-b562-4743-91f8-2ff844456398
+    m_ActionName: UI/RightClick
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: ad975130-53d7-4b04-a7cc-00d0e5dc30c8
+    m_ActionName: UI/TrackedDevicePosition
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 00183ee1-9b37-4b48-b54c-d7ad3f5c61d4
+    m_ActionName: UI/TrackedDeviceOrientation
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: eec44bda-e406-431b-913b-ab4c4e314ef9
+    m_ActionName: UI/TrackedDeviceSelect
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: 
+  m_DefaultActionMap: Player
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}
