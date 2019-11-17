@@ -2,6 +2,7 @@
 using UniRx.Triggers;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour {
     private const float MovementSpeed = 1.8f;
@@ -35,7 +36,7 @@ public class Player : MonoBehaviour {
         alias.Subscribe(newAlias => aliasText.text = newAlias);
 
         // Subscribe to inputs.
-        var actionEvents = GetComponent<UnityEngine.InputSystem.PlayerInput>().actionEvents;
+        var actionEvents = GetComponent<PlayerInput>().actionEvents;
 
         // Movement inputs.
         var playerMoveEvent = actionEvents[actionEvents.IndexOf(action => action.actionName == "Player/Move")];
