@@ -9,14 +9,11 @@ public class Player : MonoBehaviour {
 
     public TeamReactiveProperty team;
     public StringReactiveProperty alias;
+    public ReactiveProperty<bool> alive = new ReactiveProperty<bool>(true);
     private new Rigidbody rigidbody;
     private Text aliasText;
 
-    internal void Death() {
-        Destroy(gameObject);
-    }
-
-    void Start() {
+    void Awake() {
         rigidbody = GetComponent<Rigidbody>();
 
         // Instantiate Alias text into main UI canvas and clean up with OnDestroy
@@ -48,6 +45,9 @@ public class Player : MonoBehaviour {
                 var moveForce = moveVec * MovementSpeed;
                 rigidbody.AddForce(moveForce, ForceMode.Acceleration);
             });
+
+        // Handling death.
+        alive.Where(alive => !alive).Subscribe(_ => Destroy(gameObject));
     }
 
     void OnGUI() {
