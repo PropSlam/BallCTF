@@ -9,7 +9,8 @@ using UnityEngine.Animations;
 
 namespace Tests {
     public class FlagTest : InputTestFixture {
-        private Flag flag;
+        private Flag enemyFlag;
+        private Flag friendlyFlag;
         private Player player;
         private Keyboard keyboard;
 
@@ -31,15 +32,23 @@ namespace Tests {
             var plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
             plane.transform.localScale = new Vector3(10, 10, 10);
 
-            // Spawn flag.
             var flagPrefab = Resources.Load<GameObject>("Prefabs/Flag");
-            var flagObj = GameObject.Instantiate(flagPrefab, new Vector3(2, 0, 0), Quaternion.identity);
-            flag = flagObj.GetComponent<Flag>();
+
+            // Spawn enemy flag.
+            var enemyFlagObj = GameObject.Instantiate(flagPrefab, new Vector3(2, 0, 0), Quaternion.identity);
+            enemyFlag = enemyFlagObj.GetComponent<Flag>();
+            enemyFlag.team.Value = Team.Purple;
+
+            // Spawn friendly flag.
+            var friendlyFlagObj = GameObject.Instantiate(flagPrefab, new Vector3(-2, 0, 0), Quaternion.identity);
+            friendlyFlag = friendlyFlagObj.GetComponent<Flag>();
+            friendlyFlag.team.Value = Team.Yellow;
 
             // Spawn player.
             var playerPrefab = Resources.Load<GameObject>("Prefabs/Player/Player");
             var playerObj = GameObject.Instantiate(playerPrefab, new Vector3(0, 1, 0), Quaternion.identity);
             player = playerObj.GetComponent<Player>();
+            player.team.Value = Team.Yellow;
 
             // Initialize keyboard input
             keyboard = InputSystem.AddDevice<Keyboard>();
@@ -48,11 +57,7 @@ namespace Tests {
         // Tests flag can be grabbed by other team.
         [UnityTest]
         public IEnumerator GrabbableByOtherTeam() {
-            // Set player to Yellow team, flag to Purple team.
-            player.team.Value = Team.Yellow;
-            flag.team.Value = Team.Purple;
-
-            // Move player to flag.
+            // Move player to enemy flag.
             Time.timeScale = 10f;
             Press(keyboard.rightArrowKey);
             yield return new WaitForSeconds(2);
@@ -60,54 +65,47 @@ namespace Tests {
             Time.timeScale = 1f;
 
             // Assert flag is held by player.
-            Assert.AreEqual(player, flag.heldBy.Value);
+            Assert.AreEqual(player, enemyFlag.heldBy.Value);
+            Assert.AreEqual(enemyFlag, player.heldFlag.Value);
 
             // Assert flag position is set to player.
-            var positionConstraint = flag.GetComponent<PositionConstraint>();
+            var positionConstraint = enemyFlag.GetComponent<PositionConstraint>();
             Assert.AreEqual(player.transform, positionConstraint.GetSource(0).sourceTransform);
             Assert.IsTrue(positionConstraint.constraintActive);
-            Assert.Less(Vector3.Distance(player.transform.position, flag.transform.position), 0.1);
+            Assert.Less(Vector3.Distance(player.transform.position, enemyFlag.transform.position), 0.1);
         }
 
         // Tests flag cannot be grabbed by same team.
         [UnityTest]
         public IEnumerator NotGrabbableBySameTeam() {
-            // Set player to Yellow team, flag to Yellow team.
-            player.team.Value = Team.Yellow;
-            flag.team.Value = Team.Yellow;
-
-            // Move player to flag.
+            // Move player to friendly flag.
             Time.timeScale = 10f;
-            Press(keyboard.rightArrowKey);
+            Press(keyboard.leftArrowKey);
             yield return new WaitForSeconds(2);
-            Release(keyboard.rightArrowKey);
+            Release(keyboard.leftArrowKey);
             Time.timeScale = 1f;
 
             // Assert flag is not held by anyone.
-            Assert.IsNull(flag.heldBy.Value);
+            Assert.IsNull(enemyFlag.heldBy.Value);
+            Assert.IsNull(player.heldFlag.Value);
 
             // Assert flag position is not near player.
-            var positionConstraint = flag.GetComponent<PositionConstraint>();
+            var positionConstraint = enemyFlag.GetComponent<PositionConstraint>();
             Assert.AreEqual(0, positionConstraint.sourceCount);
             Assert.IsFalse(positionConstraint.constraintActive);
-            Assert.Greater(Vector3.Distance(player.transform.position, flag.transform.position), 0.1);
+            Assert.Greater(Vector3.Distance(player.transform.position, enemyFlag.transform.position), 0.1);
         }
 
         // Tests flag is dropped when player dies.
         [UnityTest]
         public IEnumerator DroppedOnPlayerDeath() {
-            // Set player to Yellow team, flag to Purple team.
-            player.team.Value = Team.Yellow;
-            flag.team.Value = Team.Purple;
+            enemyFlag.GrabBy(player);
 
-            flag.heldBy.Value = player;
+            // Teleport player far away.
+            player.transform.position = new Vector3(10, 0, 0);
 
-            // Move player to the right.
-            Time.timeScale = 10f;
-            Press(keyboard.rightArrowKey);
-            yield return new WaitForSeconds(2);
-            Release(keyboard.rightArrowKey);
-            Time.timeScale = 1f;
+            // Advance one tick.
+            yield return new WaitForFixedUpdate();
 
             // Kill player.
             player.alive.Value = false;
@@ -116,13 +114,43 @@ namespace Tests {
             yield return new WaitForFixedUpdate();
 
             // Assert flag is not held by anyone.
-            Assert.IsTrue(flag.heldBy.Value == null);
+            Assert.IsTrue(enemyFlag.heldBy.Value == null);
+            Assert.IsTrue(player.heldFlag.Value == null);
 
             // Assert flag position is reset.
-            var positionConstraint = flag.GetComponent<PositionConstraint>();
+            var positionConstraint = enemyFlag.GetComponent<PositionConstraint>();
             Assert.AreEqual(0, positionConstraint.sourceCount);
             Assert.IsFalse(positionConstraint.constraintActive);
-            Assert.Less(Vector3.Distance(flag.transform.position, new Vector3(2, 0, 0)), 0.01);
+            Assert.Less(Vector3.Distance(enemyFlag.transform.position, new Vector3(2, 0, 0)), 0.01);
+        }
+
+        // Tests flag can be captured.
+        [UnityTest]
+        public IEnumerator CanBeCaptured() {
+            enemyFlag.GrabBy(player);
+
+            var captured = false;
+            enemyFlag.captured.AddListener(_ => captured = true);
+
+            // Move player to the left (toward friendly flag).
+            Time.timeScale = 10f;
+            Press(keyboard.leftArrowKey);
+            yield return new WaitForSeconds(2);
+            Release(keyboard.leftArrowKey);
+            Time.timeScale = 1f;
+
+            // Assert flag is not held by anyone.
+            Assert.IsTrue(enemyFlag.heldBy.Value == null);
+            Assert.IsTrue(player.heldFlag.Value == null);
+
+            // Assert flag was captured.
+            Assert.IsTrue(captured);
+
+            // Assert flag position is reset.
+            var positionConstraint = enemyFlag.GetComponent<PositionConstraint>();
+            Assert.AreEqual(0, positionConstraint.sourceCount);
+            Assert.IsFalse(positionConstraint.constraintActive);
+            Assert.Less(Vector3.Distance(enemyFlag.transform.position, new Vector3(2, 0, 0)), 0.01);
         }
     }
 }

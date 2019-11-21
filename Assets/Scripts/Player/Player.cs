@@ -10,6 +10,7 @@ public class Player : MonoBehaviour {
     public TeamReactiveProperty team;
     public StringReactiveProperty alias;
     public ReactiveProperty<bool> alive = new ReactiveProperty<bool>(true);
+    public ReactiveProperty<Flag> heldFlag = new ReactiveProperty<Flag>();
     private new Rigidbody rigidbody;
     private Text aliasText;
 
