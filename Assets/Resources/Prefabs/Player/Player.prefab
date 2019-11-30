@@ -58,6 +58,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -120,13 +121,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 6100053024175195876}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c7c6aa6a26e4dad47b3edd93554dc242, type: 3}
+  m_Script: {fileID: 11500000, guid: 82bc41fe7b09a032b90b9cade5fa023a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   team:
     value: 0
   alias:
-    value: propslam
+    value: 
 --- !u!114 &1182116324
 MonoBehaviour:
   m_ObjectHideFlags: 0

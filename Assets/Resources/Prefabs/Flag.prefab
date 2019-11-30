@@ -63,10 +63,11 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 7741625113677808684, guid: be7180d0cf55b1f4089f5114c9b8fbe3, type: 3}
+  - {fileID: 2100000, guid: b2dc3eff253dec24583e0749d4226cc2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -104,11 +105,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 7389343929635192154}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 95e9c44f7ad06dd4eb21dff88e45ad5d, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f8e544ba08f1dc9a9c37cb27158976d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   team:
     value: 0
+  captured:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1818360608 &7389343929635192153
 PositionConstraint:
   m_ObjectHideFlags: 0
