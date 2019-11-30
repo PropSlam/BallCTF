@@ -1,21 +1,17 @@
 ﻿using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.TestTools;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
 using UnityEngine.Animations;
 
 namespace Tests {
-    public class FlagTest : InputTestFixture {
+    public class FlagTest {
         private Flag enemyFlag;
         private Flag friendlyFlag;
         private Player player;
-        private Keyboard keyboard;
 
         [SetUp]
-        public new void Setup() {
+        public void Setup() {
             // Spawn main camera.
             var cam = GameObject.Instantiate(
                 new GameObject("Camera"),
@@ -49,24 +45,22 @@ namespace Tests {
             var playerObj = GameObject.Instantiate(playerPrefab, new Vector3(0, 1, 0), Quaternion.identity);
             player = playerObj.GetComponent<Player>();
             player.team.Value = Team.Yellow;
-
-            // Initialize keyboard input
-            keyboard = InputSystem.AddDevice<Keyboard>();
         }
 
         // Tests flag can be grabbed by other team.
         [UnityTest]
         public IEnumerator GrabbableByOtherTeam() {
             // Move player to enemy flag.
-            Time.timeScale = 10f;
-            Press(keyboard.rightArrowKey);
-            yield return new WaitForSeconds(2);
-            Release(keyboard.rightArrowKey);
-            Time.timeScale = 1f;
+            player.transform.position = enemyFlag.transform.position;
+            yield return new WaitForFixedUpdate();
+
+            // Move player somewhere else.
+            player.transform.position += new Vector3(10, 0, 0);
+            yield return new WaitForEndOfFrame();
 
             // Assert flag is held by player.
             Assert.AreEqual(player, enemyFlag.heldBy.Value);
-            Assert.AreEqual(enemyFlag, player.heldFlag.Value);
+            Assert.NotNull(player.heldFlag.Value);
 
             // Assert flag position is set to player.
             var positionConstraint = enemyFlag.GetComponent<PositionConstraint>();
@@ -79,21 +73,22 @@ namespace Tests {
         [UnityTest]
         public IEnumerator NotGrabbableBySameTeam() {
             // Move player to friendly flag.
-            Time.timeScale = 10f;
-            Press(keyboard.leftArrowKey);
-            yield return new WaitForSeconds(2);
-            Release(keyboard.leftArrowKey);
-            Time.timeScale = 1f;
+            player.transform.position = friendlyFlag.transform.position;
+            yield return new WaitForFixedUpdate();
+
+            // Move player away from friendly flag.
+            player.transform.position += new Vector3(10, 0, 0);
+            yield return new WaitForFixedUpdate();
 
             // Assert flag is not held by anyone.
-            Assert.IsNull(enemyFlag.heldBy.Value);
+            Assert.IsNull(friendlyFlag.heldBy.Value);
             Assert.IsNull(player.heldFlag.Value);
 
             // Assert flag position is not near player.
-            var positionConstraint = enemyFlag.GetComponent<PositionConstraint>();
+            var positionConstraint = friendlyFlag.GetComponent<PositionConstraint>();
             Assert.AreEqual(0, positionConstraint.sourceCount);
             Assert.IsFalse(positionConstraint.constraintActive);
-            Assert.Greater(Vector3.Distance(player.transform.position, enemyFlag.transform.position), 0.1);
+            Assert.Greater(Vector3.Distance(player.transform.position, friendlyFlag.transform.position), 0.1);
         }
 
         // Tests flag is dropped when player dies.
@@ -109,7 +104,7 @@ namespace Tests {
 
             // Kill player.
             player.alive.Value = false;
-            
+
             // Advance one tick.
             yield return new WaitForFixedUpdate();
 
@@ -132,12 +127,9 @@ namespace Tests {
             var captured = false;
             enemyFlag.captured.AddListener(_ => captured = true);
 
-            // Move player to the left (toward friendly flag).
-            Time.timeScale = 10f;
-            Press(keyboard.leftArrowKey);
-            yield return new WaitForSeconds(2);
-            Release(keyboard.leftArrowKey);
-            Time.timeScale = 1f;
+            // Move player to friendly flag.
+            player.transform.position = friendlyFlag.transform.position;
+            yield return new WaitForFixedUpdate();
 
             // Assert flag is not held by anyone.
             Assert.IsTrue(enemyFlag.heldBy.Value == null);
