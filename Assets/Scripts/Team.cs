@@ -1,7 +1,7 @@
 using System;
 using UniRx;
 
-public enum Team {
+public enum Team : byte {
     Yellow,
     Purple
 }

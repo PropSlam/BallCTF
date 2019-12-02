@@ -6,7 +6,7 @@ class NetworkedEntity : MonoBehaviour {
     static Queue<int> availableIds = new Queue<int>();
     static int nextId = 0;
 
-    public int id;
+    public int id = -1;
 
     void Awake() {
         id = availableIds.Count == 0 ? nextId++ : availableIds.Dequeue();
