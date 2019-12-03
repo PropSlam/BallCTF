@@ -1,6 +1,10 @@
 using LiteNetLib.Utils;
 using UnityEngine;
-using System.Runtime.InteropServices;
+
+
+public class PlayerLeavePacket {
+    public int id { get; set; }
+}
 
 public struct PlayerSpawnPacket : INetSerializable {
     public int id;
@@ -51,11 +55,16 @@ public struct PlayerInputPacket : INetSerializable {
     }
 }
 
-public struct PlayerStatePacket : INetSerializable {
+public struct PlayerState : INetSerializable {
     public int id;
     public Vector3 pos;
     public Vector3 vel;
     public Quaternion rot;
+
+    public const int Size = sizeof(int) +
+        sizeof(float) * 3 +
+        sizeof(float) * 3 +
+        sizeof(float) * 4;
 
     public void Serialize(NetDataWriter writer) {
         writer.Put(id);
@@ -69,5 +78,20 @@ public struct PlayerStatePacket : INetSerializable {
         pos = reader.GetVector3();
         vel = reader.GetVector3();
         rot = reader.GetQuaternion();
+    }
+}
+
+public struct ServerStatePacket : INetSerializable {
+    public PlayerState[] playerStates;
+
+    public void Serialize(NetDataWriter writer) {
+        foreach (var state in playerStates)
+            state.Serialize(writer);
+    }
+
+    public void Deserialize(NetDataReader reader) {
+        playerStates = new PlayerState[reader.AvailableBytes / PlayerState.Size];
+        for (int i = 0; i < playerStates.Length; i++)
+            playerStates[i].Deserialize(reader);
     }
 }

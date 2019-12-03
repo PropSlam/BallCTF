@@ -13,7 +13,7 @@ class Client : MonoBehaviour {
         var listener = new EventBasedNetListener();
         client = new NetManager(listener);
         client.Start();
-        client.Connect("localhost", 9696, Shared.CONNECTION_KEY);
+        client.Connect("PUT IP ADDRESS HERE", 9696, Shared.CONNECTION_KEY);
         Debug.Log("Client started.");
 
         listener.NetworkReceiveObservable()
@@ -32,8 +32,11 @@ class Client : MonoBehaviour {
         netPacketProcessor.NetSerializableObservable<PlayerSpawnPacket>()
             .Subscribe(ReceivePlayerSpawn);
         
-        netPacketProcessor.NetSerializableObservable<PlayerStatePacket>()
-            .Subscribe(ReceivePlayerState);
+        netPacketProcessor.NetSerializableObservable<ServerStatePacket>()
+            .Subscribe(ReceiveServerState);
+
+        netPacketProcessor.AutoObservable<PlayerLeavePacket>()
+            .Subscribe(ReceivePlayerLeave);
     }
 
     private void ReceivePlayerSpawn(PlayerSpawnPacket playerSpawn) {
@@ -47,9 +50,16 @@ class Client : MonoBehaviour {
         );
     }
 
-    private void ReceivePlayerState(PlayerStatePacket playerState) {
-        var player = NetworkedEntity.entities[playerState.id].GetComponent<Player>();
-        player.SyncState(playerState.pos, playerState.vel, playerState.rot);
+    private void ReceiveServerState(ServerStatePacket serverState) {
+        serverState.playerStates.ForEach(playerState => {
+            var player = NetworkedEntity.entities[playerState.id].GetComponent<Player>();
+            player.SyncState(playerState.pos, playerState.vel, playerState.rot);
+        });
+    }
+
+    private void ReceivePlayerLeave(PlayerLeavePacket playerLeave) {
+        var player = NetworkedEntity.entities[playerLeave.id].GetComponent<Player>();
+        PlayerManager.HandlePlayerLeave(player);
     }
 
     public void SendPlayerInput(int id, Vector2 inputVec) {

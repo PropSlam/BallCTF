@@ -1,7 +1,6 @@
 ﻿using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
-using UnityEngine.Animations;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -39,7 +38,7 @@ public class Player : MonoBehaviour {
 
         // Subscribe to alias changes.
         alias.Subscribe(newAlias => aliasText.text = newAlias);
-        
+
         // Subscribe to inputs.
         var actionEvents = GetComponent<PlayerInput>().actionEvents;
 
@@ -51,23 +50,24 @@ public class Player : MonoBehaviour {
                 inputVector.Value = input;
                 client.SendPlayerInput(networkedEntity.Id, inputVector.Value);
             });
-
         gameObject.FixedUpdateAsObservable()
             .WithLatestFrom(inputVector, (_, inputVec) => inputVec)
-            .Subscribe(inputVec => {
-                var moveVec = new Vector3(inputVec.x, 0, inputVec.y);
-                var moveForce = moveVec * MovementSpeed;
-                rigidbody.AddForce(moveForce, ForceMode.Acceleration);
-            });
+            .Subscribe(ApplyMovement);
 
         // Handling death.
         alive.Where(alive => !alive).Subscribe(_ => Destroy(gameObject));
     }
 
+    void ApplyMovement(Vector2 inputVec) {
+        var moveVec = new Vector3(inputVec.x, 0, inputVec.y);
+        var moveForce = moveVec * MovementSpeed;
+        rigidbody.AddForce(moveForce, ForceMode.Acceleration);
+    }
+
     public void SyncState(Vector3 pos, Vector3 vel, Quaternion rot) {
-        rigidbody.position = pos;
-        rigidbody.velocity = vel;
-        rigidbody.rotation = rot;
+        rigidbody.position = Vector3.Lerp(rigidbody.position, pos, 0.5f);
+        rigidbody.velocity = Vector3.Lerp(rigidbody.velocity, vel, 0.5f);
+        rigidbody.rotation = Quaternion.Lerp(rigidbody.rotation, rot, 0.5f);
     }
 
     void OnGUI() {

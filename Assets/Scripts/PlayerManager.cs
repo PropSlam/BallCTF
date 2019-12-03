@@ -32,17 +32,22 @@ class PlayerManager {
         if (local) {
             Camera.main.GetComponent<LookAtConstraint>().AddSource(new ConstraintSource {
                 sourceTransform = player.transform,
-                weight = 1f
+                weight = 1
             });
 
             Camera.main.GetComponent<PositionConstraint>().AddSource(new ConstraintSource {
                 sourceTransform = player.transform,
-                weight = 1f
+                weight = 1
             });
         } else {
-            GameObject.Destroy(player.GetComponent<PlayerInput>());
+            Object.Destroy(player.GetComponent<PlayerInput>());
         }
 
         return player;
+    }
+
+    public static void HandlePlayerLeave(Player player) {
+        players.Remove(player);
+        Object.Destroy(player.gameObject);
     }
 }

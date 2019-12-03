@@ -61,10 +61,18 @@ public static class Extensions {
     }
 
     public static IObservable<Tuple<NetPeer, NetPacketReader, DeliveryMethod>> NetworkReceiveObservable(this EventBasedNetListener listener) {
-        return Observable.FromEvent<EventBasedNetListener.OnNetworkReceive, Tuple<NetPeer, NetPacketReader, DeliveryMethod>>(
+        return Observable.FromEvent<OnNetworkReceive, Tuple<NetPeer, NetPacketReader, DeliveryMethod>>(
             h => (peer, reader, deliveryMethod) => h(Tuple.Create(peer, reader, deliveryMethod)),
             h => listener.NetworkReceiveEvent += h,
             h => listener.NetworkReceiveEvent -= h
+        );
+    }
+
+    public static IObservable<Tuple<NetPeer, DisconnectInfo>> PeerDisconnectedObservable(this EventBasedNetListener listener) {
+        return Observable.FromEvent<OnPeerDisconnected, Tuple<NetPeer, DisconnectInfo>>(
+            h => (peer, disconnectInfo) => h(Tuple.Create(peer, disconnectInfo)),
+            h => listener.PeerDisconnectedEvent += h,
+            h => listener.PeerDisconnectedEvent -= h
         );
     }
 
@@ -72,6 +80,13 @@ public static class Extensions {
     public static IObservable<T> NetSerializableObservable<T>(this NetPacketProcessor netPacketProcessor) where T : INetSerializable, new() {
         return Observable.FromEvent<T>(
             h => netPacketProcessor.SubscribeNetSerializable(h),
+            h => netPacketProcessor.RemoveSubscription<T>()
+        );
+    }
+
+    public static IObservable<T> AutoObservable<T>(this NetPacketProcessor netPacketProcessor) where T : class, new() {
+        return Observable.FromEvent<T>(
+            h => netPacketProcessor.SubscribeReusable(h),
             h => netPacketProcessor.RemoveSubscription<T>()
         );
     }
