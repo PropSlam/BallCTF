@@ -1,4 +1,8 @@
+using LiteNetLib;
 using LiteNetLib.Utils;
+using static LiteNetLib.EventBasedNetListener;
+using System;
+using UniRx;
 using UnityEngine;
 
 public static class Extensions {
@@ -45,5 +49,30 @@ public static class Extensions {
         q.z = reader.GetFloat();
         q.w = reader.GetFloat();
         return q;
+    }
+
+    // EventBasedNetListener
+    public static IObservable<ConnectionRequest> ConnectionRequestObservable(this EventBasedNetListener listener) {
+        return Observable.FromEvent<OnConnectionRequest, ConnectionRequest>(
+            h => (connRequest) => h(connRequest),
+            h => listener.ConnectionRequestEvent += h,
+            h => listener.ConnectionRequestEvent -= h
+        );
+    }
+
+    public static IObservable<Tuple<NetPeer, NetPacketReader, DeliveryMethod>> NetworkReceiveObservable(this EventBasedNetListener listener) {
+        return Observable.FromEvent<EventBasedNetListener.OnNetworkReceive, Tuple<NetPeer, NetPacketReader, DeliveryMethod>>(
+            h => (peer, reader, deliveryMethod) => h(Tuple.Create(peer, reader, deliveryMethod)),
+            h => listener.NetworkReceiveEvent += h,
+            h => listener.NetworkReceiveEvent -= h
+        );
+    }
+
+    // NetPacketProcessor
+    public static IObservable<T> NetSerializableObservable<T>(this NetPacketProcessor netPacketProcessor) where T : INetSerializable, new() {
+        return Observable.FromEvent<T>(
+            h => netPacketProcessor.SubscribeNetSerializable(h),
+            h => netPacketProcessor.RemoveSubscription<T>()
+        );
     }
 }

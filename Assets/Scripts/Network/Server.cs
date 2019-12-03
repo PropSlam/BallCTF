@@ -37,7 +37,7 @@ class Server : MonoBehaviour {
             .Subscribe(_ => server.PollEvents());
 
         // Periodically send server state syncs.
-        Observable.Interval(TimeSpan.FromMilliseconds(Shared.POLL_RATE_MS))
+        Observable.Interval(TimeSpan.FromMilliseconds(100))
             .Subscribe(_ => SendServerState());
 
         // Susbcribe to packet receives.
@@ -76,7 +76,7 @@ class Server : MonoBehaviour {
     }
 
     private void ReceivePlayerInput(PlayerInputPacket playerInput) {
-        Debug.Log($"Got input from #{playerInput.id}: {playerInput.inputVec}");
+        Debug.Log($"[SERVER] Got input from #{playerInput.id}: {playerInput.inputVec}");
         NetworkedEntity.entities[playerInput.id].GetComponent<Player>().inputVector.Value = playerInput.inputVec;
     }
 

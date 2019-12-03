@@ -37,8 +37,7 @@ class Client : MonoBehaviour {
     }
 
     private void ReceivePlayerSpawn(PlayerSpawnPacket playerSpawn) {
-        Debug.Log("[CLIENT] Player spawned.");
-        Debug.Log(playerSpawn.local);
+        Debug.Log($"[CLIENT] Player spawned (local: {playerSpawn.local}).");
         PlayerManager.SpawnClient(
             playerSpawn.id,
             playerSpawn.local,
