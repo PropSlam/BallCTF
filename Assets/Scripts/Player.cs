@@ -1,21 +1,28 @@
 ﻿using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.Animations;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour {
-    private const float MovementSpeed = 1.8f;
+    private const float MovementSpeed = 2.5f;
 
     public TeamReactiveProperty team;
     public StringReactiveProperty alias;
     public ReactiveProperty<bool> alive = new ReactiveProperty<bool>(true);
     public ReactiveProperty<Flag> heldFlag = new ReactiveProperty<Flag>();
-    private new Rigidbody rigidbody;
+    public ReactiveProperty<Vector2> inputVector = new ReactiveProperty<Vector2>();
+    public bool local = false;
+    public new Rigidbody rigidbody;
     private Text aliasText;
+    private NetworkedEntity networkedEntity;
+    private Client client;
 
     void Awake() {
         rigidbody = GetComponent<Rigidbody>();
+        networkedEntity = GetComponent<NetworkedEntity>();
+        client = FindObjectOfType<Client>();
 
         // Instantiate Alias text into main UI canvas and clean up with OnDestroy
         aliasText = GameObject.Instantiate(Resources.Load<Text>("Prefabs/Player/Alias"));
@@ -32,15 +39,21 @@ public class Player : MonoBehaviour {
 
         // Subscribe to alias changes.
         alias.Subscribe(newAlias => aliasText.text = newAlias);
-
+        
         // Subscribe to inputs.
         var actionEvents = GetComponent<PlayerInput>().actionEvents;
 
         // Movement inputs.
         var playerMoveEvent = actionEvents[actionEvents.IndexOf(action => action.actionName == "Player/Move")];
-        var playerMove = playerMoveEvent.AsObservable().Select(context => context.ReadValue<Vector2>());
-        gameObject.UpdateAsObservable()
-            .WithLatestFrom(playerMove, (_, inputVec) => inputVec)
+        var playerMove = playerMoveEvent.AsObservable()
+            .Select(context => context.ReadValue<Vector2>())
+            .Subscribe(input => {
+                inputVector.Value = input;
+                client.SendPlayerInput(networkedEntity.Id, inputVector.Value);
+            });
+
+        gameObject.FixedUpdateAsObservable()
+            .WithLatestFrom(inputVector, (_, inputVec) => inputVec)
             .Subscribe(inputVec => {
                 var moveVec = new Vector3(inputVec.x, 0, inputVec.y);
                 var moveForce = moveVec * MovementSpeed;
@@ -49,6 +62,12 @@ public class Player : MonoBehaviour {
 
         // Handling death.
         alive.Where(alive => !alive).Subscribe(_ => Destroy(gameObject));
+    }
+
+    public void SyncState(Vector3 pos, Vector3 vel, Quaternion rot) {
+        rigidbody.position = pos;
+        rigidbody.velocity = vel;
+        rigidbody.rotation = rot;
     }
 
     void OnGUI() {

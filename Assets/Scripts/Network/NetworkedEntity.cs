@@ -2,19 +2,32 @@ using System.Collections.Generic;
 using UnityEngine;
 
 class NetworkedEntity : MonoBehaviour {
-    static Dictionary<int, NetworkedEntity> entities = new Dictionary<int, NetworkedEntity>();
-    static Queue<int> availableIds = new Queue<int>();
+    public readonly static Dictionary<int, NetworkedEntity> entities = new Dictionary<int, NetworkedEntity>();
+    static readonly Queue<int> availableIds = new Queue<int>();
     static int nextId = 0;
 
-    public int id = -1;
-
-    void Awake() {
-        id = availableIds.Count == 0 ? nextId++ : availableIds.Dequeue();
-        entities[id] = this;
+    private int _id = -1;
+    public int Id {
+        get {
+            if (_id < 0) {
+                _id = availableIds.Count == 0 ? nextId++ : availableIds.Dequeue();
+                entities[_id] = this;
+            }
+            return _id;
+        }
+        set {
+            if (entities.ContainsKey(_id)) Free();
+            _id = value;
+            entities[_id] = this;
+        }
     }
 
     void OnDestroy() {
-        availableIds.Enqueue(id);
-        entities.Remove(id);
+        Free();
+    }
+
+    void Free() {
+        availableIds.Enqueue(Id);
+        entities.Remove(Id);
     }
 }

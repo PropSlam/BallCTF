@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7389343929635192155}
   - component: {fileID: 1562137953744413791}
   - component: {fileID: 7389343929635192153}
+  - component: {fileID: 1075025748776269380}
   m_Layer: 0
   m_Name: Flag
   m_TagString: Untagged
@@ -130,3 +131,16 @@ PositionConstraint:
   m_IsContraintActive: 0
   m_IsLocked: 0
   m_Sources: []
+--- !u!114 &1075025748776269380
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7389343929635192154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d89a23cd8aef0e64785861e9f4f1584c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  id: -1
