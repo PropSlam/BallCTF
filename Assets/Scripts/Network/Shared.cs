@@ -6,7 +6,7 @@ class Shared {
 
     public static NetPacketProcessor GetNetPacketProcessor() {
         var netPacketProcessor = new NetPacketProcessor();
-        // netPacketProcessor.RegisterNestedType<PlayerInputPacket>();
+        netPacketProcessor.RegisterNestedType<PlayerInputPacket>();
         netPacketProcessor.RegisterNestedType<PlayerSpawnPacket>();
         netPacketProcessor.RegisterNestedType<PlayerState>();
         return netPacketProcessor;
